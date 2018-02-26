@@ -7,7 +7,6 @@ import (
 	"strings"
 	"fmt"
 	"github.com/mailru/easyjson"
-	"regexp"
 )
 
 //easyjson:json
@@ -32,18 +31,17 @@ func FastSearch(out io.Writer) {
 		panic(err)
 	}
 
-	r := regexp.MustCompile("@")
-	seenBrowsers := []string{}
-	uniqueBrowsers := 0
 	foundUsers := ""
 
 	lines := strings.Split(string(fileContents), "\n")
 
-	countUser := 0
-	for _, line := range lines {
-		user := UserWK{}
+	seenBrowsers := []string{}
 
-		err := easyjson.Unmarshal([]byte(line), &user)
+	fmt.Fprintln(out, "found users:")
+	for i, line := range lines {
+		user := &UserWK{}
+
+		err := easyjson.Unmarshal([]byte(line), user)
 		if err != nil {
 			panic(err)
 		}
@@ -63,9 +61,7 @@ func FastSearch(out io.Writer) {
 					}
 				}
 				if notSeenBefore {
-					// log.Printf("SLOW New browser: %s, first seen: %s", browser, user["name"])
 					seenBrowsers = append(seenBrowsers, browser)
-					uniqueBrowsers++
 				}
 			}
 
@@ -78,9 +74,7 @@ func FastSearch(out io.Writer) {
 					}
 				}
 				if notSeenBefore {
-					// log.Printf("SLOW New browser: %s, first seen: %s", browser, user["name"])
 					seenBrowsers = append(seenBrowsers, browser)
-					uniqueBrowsers++
 				}
 			}
 		}
@@ -89,12 +83,10 @@ func FastSearch(out io.Writer) {
 		if !(isAndroid && isMSIE) {
 			continue
 		}
-
-		email := r.ReplaceAllString(user.Email, " [at] ")
-		foundUsers += fmt.Sprintf("[%d] %s <%s>\n", countUser, user.Name, email)
-		countUser++
+		email := strings.Replace(user.Email,  "@", " [at] ", -1)
+		foundUsers += fmt.Sprintf("[%d] %s <%s>\n", i, user.Name, email)
 	}
 
-	fmt.Fprintln(out, "found users:\n"+foundUsers)
+	fmt.Fprintln(out, foundUsers)
 	fmt.Fprintln(out, "Total unique browsers", len(seenBrowsers))
 }
