@@ -2,23 +2,19 @@ package main
 
 import (
 	"io"
-	"os"
 	"io/ioutil"
-	"strings"
+	"sync"
+	"bytes"
 	"fmt"
 	"github.com/mailru/easyjson"
-	"sync"
+	"strings"
 )
 
 //easyjson:json
 type UserWK struct {
 	Browsers []string `json:"browsers"`
-	Company  string   `json:"company"`
-	Country  string   `json:"country"`
 	Email    string   `json:"email"`
-	Job      string   `json:"job"`
 	Name     string   `json:"name"`
-	Phone    string   `json:"phone"`
 }
 
 var dataPool = sync.Pool{
@@ -29,74 +25,92 @@ var dataPool = sync.Pool{
 
 // вам надо написать более быструю оптимальную этой функции
 func FastSearch(out io.Writer) {
-	file, err := os.Open(filePath)
+
+	lines, err := readLines(filePath)
+
 	if err != nil {
 		panic(err)
 	}
 
-	fileContents, err := ioutil.ReadAll(file)
-	if err != nil {
-		panic(err)
-	}
+	var seenBrowsers []string
 
-	foundUsers := ""
+	var writeUniq bool
+	var notSeenBefore bool
+	var isAndroid bool
+	var isMSIE bool
 
-	lines := strings.Split(string(fileContents), "\n")
-
-	seenBrowsers := []string{}
-
-	fmt.Fprintln(out, "found users:")
-
-
+	fmt.Fprintln(out, fmt.Sprintf("found users:"))
 	for i, line := range lines {
-		user := dataPool.Get().(*UserWK)
-		err := easyjson.Unmarshal([]byte(line), user)
-		if err != nil {
-			panic(err)
-		}
+		userWK := dataPool.Get().(*UserWK)
+		easyjson.Unmarshal([]byte(line), userWK)
 
+		isAndroid = false
+		isMSIE = false
 
-		isAndroid := false
-		isMSIE := false
-
-		for _, browser := range user.Browsers {
+		for _, browser := range userWK.Browsers {
+			notSeenBefore = true
+			writeUniq = false
 
 			if strings.Contains(browser, "Android") {
 				isAndroid = true
-				notSeenBefore := true
-				for _, item := range seenBrowsers {
-					if item == browser {
-						notSeenBefore = false
-					}
-				}
-				if notSeenBefore {
-					seenBrowsers = append(seenBrowsers, browser)
-				}
+				writeUniq = true
 			}
 
 			if strings.Contains(browser, "MSIE") {
 				isMSIE = true
-				notSeenBefore := true
+				writeUniq = true
+			}
+
+			if writeUniq == true {
+
 				for _, item := range seenBrowsers {
 					if item == browser {
 						notSeenBefore = false
 					}
 				}
+
 				if notSeenBefore {
 					seenBrowsers = append(seenBrowsers, browser)
 				}
+
 			}
 		}
 
-		dataPool.Put(user)
+		dataPool.Put(userWK)
 
 		if !(isAndroid && isMSIE) {
 			continue
 		}
-		email := strings.Replace(user.Email,  "@", " [at] ", -1)
-		foundUsers += fmt.Sprintf("[%d] %s <%s>\n", i, user.Name, email)
+
+		email := strings.Replace(userWK.Email,  "@", " [at] ", -1)
+		fmt.Fprintln(out, fmt.Sprintf("[%d] %s <%s>", i, userWK.Name, email))
 	}
 
-	fmt.Fprintln(out, foundUsers)
-	fmt.Fprintln(out, "Total unique browsers", len(seenBrowsers))
+	fmt.Fprintln(out, "\nTotal unique browsers", len(seenBrowsers))
+}
+
+
+func readLines(filename string) ([]string, error) {
+	var lines []string
+	file, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return lines, err
+	}
+	buf := bytes.NewBuffer(file)
+	for {
+		line, err := buf.ReadString('\n')
+		if len(line) == 0 {
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				return lines, err
+			}
+		}
+		lines = append(lines, line)
+		if err != nil && err != io.EOF {
+			return lines, err
+		}
+	}
+	return lines, nil
 }

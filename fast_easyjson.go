@@ -59,18 +59,10 @@ func easyjson3486653aDecodeHw3BenchTemp(in *jlexer.Lexer, out *UserWK) {
 				}
 				in.Delim(']')
 			}
-		case "company":
-			out.Company = string(in.String())
-		case "country":
-			out.Country = string(in.String())
 		case "email":
 			out.Email = string(in.String())
-		case "job":
-			out.Job = string(in.String())
 		case "name":
 			out.Name = string(in.String())
-		case "phone":
-			out.Phone = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -107,26 +99,6 @@ func easyjson3486653aEncodeHw3BenchTemp(out *jwriter.Writer, in UserWK) {
 		}
 	}
 	{
-		const prefix string = ",\"company\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Company))
-	}
-	{
-		const prefix string = ",\"country\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Country))
-	}
-	{
 		const prefix string = ",\"email\":"
 		if first {
 			first = false
@@ -137,16 +109,6 @@ func easyjson3486653aEncodeHw3BenchTemp(out *jwriter.Writer, in UserWK) {
 		out.String(string(in.Email))
 	}
 	{
-		const prefix string = ",\"job\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Job))
-	}
-	{
 		const prefix string = ",\"name\":"
 		if first {
 			first = false
@@ -155,16 +117,6 @@ func easyjson3486653aEncodeHw3BenchTemp(out *jwriter.Writer, in UserWK) {
 			out.RawString(prefix)
 		}
 		out.String(string(in.Name))
-	}
-	{
-		const prefix string = ",\"phone\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Phone))
 	}
 	out.RawByte('}')
 }

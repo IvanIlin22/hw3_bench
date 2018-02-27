@@ -1,5 +1,24 @@
 # hw3_bench
 
+Есть функиця, которая что-то там ищет по файлу. Но делает она это не очень быстро. Надо её оптимизировать.
+
+В данном случае к чему прийти нужно:
+
+B/op < 559910
+
+allocs/op < 12506
+
+### Снятие тестов
+
+```
+go test -bench . -benchmem -cpuprofile cpu.out -memprofile mem.out -memprofilerate=1 main_test.go fast.go common.go fast_easyjson.go
+```
+
+Исследование Оперативной памяти
+```
+go tool pprof .\main.test.exe .\mem.out
+```
+
 ### Запуск:
    
    ```go test -v ```- чтобы проверить что ничего не сломалось
@@ -37,3 +56,6 @@ BenchmarkFast-4              300           5124503 ns/op         4386214 B/op   
 ```
 BenchmarkFast-4              300           4271814 ns/op         4150028 B/op      12623 allocs/op
 ``` 
+
+
+

@@ -24,6 +24,7 @@ func TestSearch(t *testing.T) {
 	fastOut := new(bytes.Buffer)
 	FastSearch(fastOut)
 	fastResult := fastOut.String()
+	fastOut.String()
 
 	if slowResult != fastResult {
 		t.Errorf("results not match\nGot:\n%v\nExpected:\n%v", fastResult, slowResult)
@@ -44,3 +45,35 @@ func BenchmarkFast(b *testing.B) {
 		FastSearch(ioutil.Discard)
 	}
 }
+
+
+//func BenchmarkCopyPreAllocate(b *testing.B) {
+//	var result string
+//	for n := 0; n < b.N; n++ {
+//		bs := make([]byte, cnt*len(sss))
+//		bl := 0
+//		for i := 0; i < cnt; i++ {
+//			bl += copy(bs[bl:], sss)
+//		}
+//		result = string(bs)
+//	}
+//	b.StopTimer()
+//	if result != expected {
+//		b.Errorf("unexpected result; got=%s, want=%s", string(result), expected)
+//	}
+//}
+//
+//func BenchmarkAppendPreAllocate(b *testing.B) {
+//	var result string
+//	for n := 0; n < b.N; n++ {
+//		data := make([]byte, 0, cnt*len(sss))
+//		for i := 0; i < cnt; i++ {
+//			data = append(data, sss...)
+//		}
+//		result = string(data)
+//	}
+//	b.StopTimer()
+//	if result != expected {
+//		b.Errorf("unexpected result; got=%s, want=%s", string(result), expected)
+//	}
+//}
