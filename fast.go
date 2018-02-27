@@ -7,6 +7,7 @@ import (
 	"strings"
 	"fmt"
 	"github.com/mailru/easyjson"
+	"sync"
 )
 
 //easyjson:json
@@ -19,6 +20,13 @@ type UserWK struct {
 	Name     string   `json:"name"`
 	Phone    string   `json:"phone"`
 }
+
+var dataPool = sync.Pool{
+	New: func() interface{} {
+		return &UserWK{}
+	},
+}
+
 // вам надо написать более быструю оптимальную этой функции
 func FastSearch(out io.Writer) {
 	file, err := os.Open(filePath)
@@ -38,9 +46,10 @@ func FastSearch(out io.Writer) {
 	seenBrowsers := []string{}
 
 	fmt.Fprintln(out, "found users:")
-	for i, line := range lines {
-		user := &UserWK{}
 
+
+	for i, line := range lines {
+		user := dataPool.Get().(*UserWK)
 		err := easyjson.Unmarshal([]byte(line), user)
 		if err != nil {
 			panic(err)
@@ -79,6 +88,7 @@ func FastSearch(out io.Writer) {
 			}
 		}
 
+		dataPool.Put(user)
 
 		if !(isAndroid && isMSIE) {
 			continue

@@ -32,4 +32,8 @@ BenchmarkFast-4               10         115124640 ns/op        335701931 B/op  
 ```
 BenchmarkFast-4              300           5124503 ns/op         4386214 B/op      14843 allocs/op
 ```
- 
+3. После установки sync.Pool - повторного использования памяти
+
+```
+BenchmarkFast-4              300           4271814 ns/op         4150028 B/op      12623 allocs/op
+``` 
