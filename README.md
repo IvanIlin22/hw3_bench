@@ -57,5 +57,9 @@ BenchmarkFast-4              300           5124503 ns/op         4386214 B/op   
 BenchmarkFast-4              300           4271814 ns/op         4150028 B/op      12623 allocs/op
 ``` 
 
+4. Построчное считывание файла
+```
+BenchmarkFast-4               50          25690114 ns/op         2415471 B/op       9621 allocs/op
+```
 
 
