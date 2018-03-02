@@ -62,4 +62,12 @@ BenchmarkFast-4              300           4271814 ns/op         4150028 B/op   
 BenchmarkFast-4               50          25690114 ns/op         2415471 B/op       9621 allocs/op
 ```
 
+5. Финальная оптимизация, отсек лишние преобразования
 
+```
+bytes.Contains(row, []byte("Android"))
+```
+
+```
+BenchmarkFast-4              500           3443097 ns/op          375658 B/op       4658 allocs/op
+```

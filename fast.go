@@ -5,7 +5,10 @@ import (
 	"sync"
 	"os"
 	"bufio"
+	"strings"
+	"fmt"
 	"github.com/mailru/easyjson"
+	"bytes"
 )
 
 //easyjson:json
@@ -27,69 +30,67 @@ func FastSearch(out io.Writer) {
 	file, _ := os.Open(filePath) // For read access.
 	defer file.Close()
 
-	//var seenBrowsers []string
-	//var writeUniq bool
-	//var notSeenBefore bool
-	//var isAndroid bool
-	//var isMSIE bool
-
+	var seenBrowsers []string
+	var writeUniq bool
+	var notSeenBefore bool
+	var isAndroid bool
+	var isMSIE bool
 
 	in := bufio.NewScanner(file)
 
-	//count := 0
-	//
-	userWK := dataPool.Get().(*UserWK)
+	fmt.Fprintln(out, fmt.Sprintf("found users:"))
 
+	count := 0
 	for in.Scan() {
+		count ++
+		row := in.Bytes()
 
-		temp := in.Bytes()
+		if bytes.Contains(row, []byte("Android")) == false && bytes.Contains(row, []byte("MSIE")) == false {
+			continue
+		}
 
-		easyjson.Unmarshal(temp, &UserWK{})
+		user := dataPool.Get().(*UserWK)
+		easyjson.Unmarshal(row, user)
 
-		//isAndroid = false
-		//isMSIE = false
-		//
-		//for _, browser := range userWK.Browsers {
-		//	notSeenBefore = true
-		//	writeUniq = false
-		//
-		//	if strings.Contains(browser, "Android") {
-		//		isAndroid = true
-		//		writeUniq = true
-		//	}
-		//
-		//	if strings.Contains(browser, "MSIE") {
-		//		isMSIE = true
-		//		writeUniq = true
-		//	}
-		//
-		//	if writeUniq == true {
-		//
-		//		for _, item := range seenBrowsers {
-		//			if item == browser {
-		//				notSeenBefore = false
-		//			}
-		//		}
-		//
-		//		if notSeenBefore {
-		//			seenBrowsers = append(seenBrowsers, browser)
-		//		}
-		//
-		//	}
-		//}
-		//
-		dataPool.Put(userWK)
-		//count ++
-		//if !(isAndroid && isMSIE) {
-		//	continue
-		//}
-		//
-		//email := strings.Replace(userWK.Email,  "@", " [at] ", -1)
-		//fmt.Fprintln(out, fmt.Sprintf("[%d] %s <%s>", count, userWK.Name, email))
+		isAndroid = false
+		isMSIE = false
+
+		for _, browser := range user.Browsers {
+			notSeenBefore = true
+			writeUniq = false
+
+			if strings.Contains(browser, "Android") {
+				isAndroid = true
+				writeUniq = true
+			}
+
+			if strings.Contains(browser, "MSIE") {
+				isMSIE = true
+				writeUniq = true
+			}
+
+			if writeUniq == true {
+				for _, item := range seenBrowsers {
+					if item == browser {
+						notSeenBefore = false
+					}
+				}
+
+				if notSeenBefore {
+					seenBrowsers = append(seenBrowsers, browser)
+				}
+			}
+		}
+
+		dataPool.Put(user)
+		if !(isAndroid && isMSIE) {
+			continue
+		}
+
+		email := strings.Replace(user.Email,  "@", " [at] ", -1)
+		fmt.Fprintln(out, fmt.Sprintf("[%d] %s <%s>", count - 1, user.Name, email))
 	}
 
 
-	//fmt.Fprintln(out, fmt.Sprintf("found users:"))
-	//
-	//fmt.Fprintln(out, "\nTotal unique browsers", len(seenBrowsers))
+	fmt.Fprintln(out, "\nTotal unique browsers", len(seenBrowsers))
 }

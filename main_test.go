@@ -19,17 +19,15 @@ func init() {
 func TestSearch(t *testing.T) {
 	slowOut := new(bytes.Buffer)
 	SlowSearch(slowOut)
-	slowOut.String()
-	//slowResult := slowOut.String()
+	slowResult := slowOut.String()
 
 	fastOut := new(bytes.Buffer)
 	FastSearch(fastOut)
-	fastOut.String()
-	//fastResult := fastOut.String()
+	fastResult := fastOut.String()
 
-	//if slowResult != fastResult {
-	//	t.Errorf("results not match\nGot:\n%v\nExpected:\n%v", fastResult, slowResult)
-	//}
+	if slowResult != fastResult {
+		t.Errorf("results not match\nGot:\n%v\nExpected:\n%v", fastResult, slowResult)
+	}
 }
 
 // -----
